@@ -50,7 +50,7 @@ describe('Topic\'s', () => {
 			categoryId: categoryObj.cid,
 			title: 'Test Topic Title',
 			content: 'The content of test topic',
-			private: true
+			private: true,
 		};
 	});
 
