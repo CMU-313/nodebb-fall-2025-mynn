@@ -73,6 +73,18 @@ topicsAPI.create = async function (caller, data) {
 		}
 	}
 
+	// Log the private field for verification
+	if (payload.hasOwnProperty('private')) {
+		await events.log({
+			type: 'topic-create-private-field',
+			uid: caller.uid,
+			ip: caller.ip,
+			private: payload.private,
+			cid: payload.cid,
+			title: payload.title,
+		});
+	}
+
 	await meta.blacklist.test(caller.ip);
 	const shouldQueue = await posts.shouldQueue(caller.uid, payload);
 	if (shouldQueue) {
@@ -100,6 +112,17 @@ topicsAPI.reply = async function (caller, data) {
 	const payload = { ...data };
 	delete payload.pid;
 	apiHelpers.setDefaultPostData(caller, payload);
+
+	// Log the private field for verification
+	if (payload.hasOwnProperty('private')) {
+		await events.log({
+			type: 'topic-reply-private-field',
+			uid: caller.uid,
+			ip: caller.ip,
+			private: payload.private,
+			tid: payload.tid,
+		});
+	}
 
 	await meta.blacklist.test(caller.ip);
 	const shouldQueue = await posts.shouldQueue(caller.uid, payload);

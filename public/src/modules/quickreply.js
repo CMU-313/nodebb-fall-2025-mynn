@@ -66,6 +66,12 @@ define('quickreply', [
 				handle: undefined,
 				content: replyMsg,
 			};
+
+			// Check if there's a private checkbox and include its value
+			const privateCheckbox = $('[component="topic/quickreply/private"]');
+			if (privateCheckbox.length) {
+				replyData.private = privateCheckbox.is(':checked');
+			}
 			const replyLen = replyMsg.length;
 			if (replyLen < parseInt(config.minimumPostLength, 10)) {
 				return alerts.error('[[error:content-too-short, ' + config.minimumPostLength + ']]');

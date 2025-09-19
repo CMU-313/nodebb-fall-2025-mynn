@@ -77,6 +77,35 @@ describe('Topic\'s', () => {
 			});
 		});
 
+		it('should create a new topic with private field', async () => {
+			const result = await apiTopics.create({ uid: adminUid, ip: '127.0.0.1' }, {
+				title: 'Private Test Topic',
+				content: 'This is a private test topic',
+				cid: categoryObj.cid,
+				private: true,
+			});
+			assert(result);
+			assert(result.tid);
+			
+			// Check if the post data contains the private field
+			const postData = await posts.getPostData(result.mainPid);
+			assert.strictEqual(postData.private, 1); // Should be converted to integer
+		});
+
+		it('should create a topic reply with private field', async () => {
+			const replyResult = await apiTopics.reply({ uid: adminUid, ip: '127.0.0.1' }, {
+				tid: topic.tid,
+				content: 'This is a private reply',
+				private: false,
+			});
+			assert(replyResult);
+			assert(replyResult.pid);
+			
+			// Check if the post data contains the private field
+			const postData = await posts.getPostData(replyResult.pid);
+			assert.strictEqual(postData.private, 0); // Should be converted to integer
+		});
+
 		it('should get post count', async () => {
 			const count = await socketTopics.postcount({ uid: adminUid }, topic.tid);
 			assert.strictEqual(count, 1);

@@ -49,6 +49,11 @@ exports.post = async function (req, res) {
 		handle: body.handle,
 		fromQueue: false,
 	};
+	
+	// Include private field if present
+	if (body.hasOwnProperty('private')) {
+		data.private = body.private;
+	}
 	req.body.noscript = 'true';
 
 	if (!data.content) {
