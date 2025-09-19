@@ -140,4 +140,8 @@ function modifyTopic(topic, fields) {
 			};
 		});
 	}
+
+	if (topic.hasOwnProperty('private')) {
+		topic.private = topic.private === 'true';
+	}
 }
