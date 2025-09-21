@@ -80,7 +80,7 @@ privsTopics.filterTids = async function (privilege, tids, uid) {
 		return [];
 	}
 
-	const topicsData = await topics.getTopicsFields(tids, ['tid', 'cid', 'deleted', 'scheduled']);
+	const topicsData = await topics.getTopicsFields(tids, ['tid', 'cid', 'deleted', 'scheduled', 'private', 'uid']);
 	const cids = _.uniq(topicsData.map(topic => topic.cid));
 	const results = await privsCategories.getBase(privilege, cids, uid);
 
@@ -93,9 +93,13 @@ privsTopics.filterTids = async function (privilege, tids, uid) {
 	const canViewDeleted = _.zipObject(cids, results.view_deleted);
 	const canViewScheduled = _.zipObject(cids, results.view_scheduled);
 
+	// extended existing filter to account for can view private of topic ids
 	tids = topicsData.filter(t => (
 		cidsSet.has(t.cid) &&
-		(results.isAdmin || privsTopics.canViewDeletedScheduled(t, {}, canViewDeleted[t.cid], canViewScheduled[t.cid]))
+		(results.isAdmin || 
+		privsTopics.canViewDeletedScheduled(t, {}, canViewDeleted[t.cid], canViewScheduled[t.cid]) &&
+		privsTopics.canViewPrivate(t, uid, { isAdminOrMod: results.isAdmin || results.isModerator[cids.indexOf(t.cid)] })
+		)
 	)).map(t => t.tid);
 
 	const data = await plugins.hooks.fire('filter:privileges.topics.filter', {
@@ -205,4 +209,23 @@ privsTopics.canViewDeletedScheduled = function (topic, privileges = {}, viewDele
 	}
 
 	return true;
+};
+
+// feat - new function similar to canViewDeletedScheduled
+privsTopics.canViewPrivate = function (topic, uid, privileges = {}) {
+	if (!topic || !topic.private) {
+		return true; // found public
+	}
+    
+	// author can always see their own private topics
+	if (topic.uid === uid) {
+		return true;
+	}
+
+	// admin/mod can see all private topics
+	if (privileges.isAdminOrMod) {
+		return true;
+	}
+
+	return false; // everyone else cannot see private
 };
