@@ -97,10 +97,9 @@ privsTopics.filterTids = async function (privilege, tids, uid) {
 	tids = topicsData.filter(t => (
 		cidsSet.has(t.cid) &&
 		(results.isAdmin || 
-		privsTopics.canViewDeletedScheduled(t, {}, canViewDeleted[t.cid], canViewScheduled[t.cid]) &&
-		privsTopics.canViewPrivate(t, uid, { isAdminOrMod: results.isAdmin || results.isModerator[cids.indexOf(t.cid)] })
-		)
-	)).map(t => t.tid);
+		(privsTopics.canViewDeletedScheduled(t, {}, canViewDeleted[t.cid], canViewScheduled[t.cid]) &&
+		privsTopics.canViewPrivate(t, uid, { isAdminOrMod: results.isAdmin || results.isModerator[cids.indexOf(t.cid)] }))
+		))).map(t => t.tid);
 
 	const data = await plugins.hooks.fire('filter:privileges.topics.filter', {
 		privilege: privilege,
