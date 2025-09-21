@@ -98,6 +98,11 @@ function modifyTopic(topic, fields) {
 
 	db.parseIntFields(topic, intFields, fields);
 
+	// refactor- conversion of private flag to boolean for API consistency
+	if (topic.hasOwnProperty('private')) {
+		topic.private = Boolean(topic.private);
+	}
+
 	if (topic.hasOwnProperty('title')) {
 		topic.titleRaw = topic.title;
 		topic.title = String(topic.title);
