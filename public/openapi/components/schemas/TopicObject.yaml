@@ -234,6 +234,9 @@ TopicObjectSlim:
           type: number
           description: Whether or not this particular topic is pinned to the top of the
             category
+        private:
+          type: boolean
+          description: Whether or not this topic is private, ie visible only to author and admins
         timestamp:
           type: number
         timestampISO:

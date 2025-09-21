@@ -96,10 +96,11 @@ privsTopics.filterTids = async function (privilege, tids, uid) {
 	// extended existing filter to account for can view private of topic ids
 	tids = topicsData.filter(t => (
 		cidsSet.has(t.cid) &&
-		(results.isAdmin || 
-		(privsTopics.canViewDeletedScheduled(t, {}, canViewDeleted[t.cid], canViewScheduled[t.cid]) &&
-		privsTopics.canViewPrivate(t, uid, { isAdminOrMod: results.isAdmin || results.isModerator[cids.indexOf(t.cid)] }))
-		))).map(t => t.tid);
+        (results.isAdmin || (
+		privsTopics.canViewDeletedScheduled(t, {}, canViewDeleted[t.cid], canViewScheduled[t.cid]) &&
+		privsTopics.canViewPrivate(t, uid, { isAdminOrMod: results.isAdmin || (results.isModerator && results.isModerator[cids.indexOf(t.cid)]) })
+        ))
+	)).map(t => t.tid);
 
 	const data = await plugins.hooks.fire('filter:privileges.topics.filter', {
 		privilege: privilege,
@@ -212,15 +213,21 @@ privsTopics.canViewDeletedScheduled = function (topic, privileges = {}, viewDele
 
 // feat - new function similar to canViewDeletedScheduled
 privsTopics.canViewPrivate = function (topic, uid, privileges = {}) {
-	if (!topic || !topic.private) {
-		return true; // found public
+	// handle undefined or null topic
+	if (!topic) {
+		return false;
 	}
-    
+	
+	// if topic is not private, then everyone can see it
+	if (!topic.private) {
+		return true;
+	}
+	
 	// author can always see their own private topics
 	if (topic.uid === uid) {
 		return true;
 	}
-
+	
 	// admin/mod can see all private topics
 	if (privileges.isAdminOrMod) {
 		return true;
