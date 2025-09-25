@@ -678,4 +678,75 @@ describe('Hash methods', () => {
 			assert.equal(d[1].newField, -5);
 		});
 	});
+
+
+	// tests for database implementation with private field
+	describe('private field for topics', () => {
+		it('should store private flag as 1 for private topics', async () => {
+			await db.setObjectField('topic:private1', 'private', 1);
+			const privateValue = await db.getObjectField('topic:private1', 'private');
+			assert.strictEqual(privateValue, '1');
+		});
+
+		it('should store private flag as 0 for public topics', async () => {
+			await db.setObjectField('topic:public1', 'private', 0);
+			const privateValue = await db.getObjectField('topic:public1', 'private');
+			assert.strictEqual(privateValue, '0');
+		});
+
+		it('should return null when private field is missing', async () => {
+			await db.setObject('topic:legacy1', { tid: 'legacy1', title: 'Legacy Topic' });
+			const privateValue = await db.getObjectField('topic:legacy1', 'private');
+			assert.strictEqual(privateValue, null);
+		});
+
+		it('should handle complete topic data with private field', async () => {
+			await db.setObject('topic:complete1', {
+				tid: 'complete1',
+				uid: 1,
+				title: 'Complete Test Topic',
+				private: 1,
+			});
+
+			const topicData = await db.getObject('topic:complete1');
+			assert.strictEqual(topicData.private, '1');
+			assert.strictEqual(topicData.title, 'Complete Test Topic');
+		});
+
+		it('should update private field correctly', async () => {
+			await db.setObjectField('topic:update1', 'private', 0);
+			let value = await db.getObjectField('topic:update1', 'private');
+			assert.strictEqual(value, '0');
+
+			await db.setObjectField('topic:update1', 'private', 1);
+			value = await db.getObjectField('topic:update1', 'private');
+			assert.strictEqual(value, '1');
+		});
+
+		it('should check if private field exists', async () => {
+			await db.setObjectField('topic:exists1', 'private', 1);
+			
+			const exists = await db.isObjectField('topic:exists1', 'private');
+			assert.strictEqual(exists, true);
+
+			const notExists = await db.isObjectField('topic:exists1', 'nonexistent');
+			assert.strictEqual(notExists, false);
+		});
+
+		it('should delete private field', async () => {
+			await db.setObject('topic:delete1', { private: 1, title: 'Test' });
+			
+			let exists = await db.isObjectField('topic:delete1', 'private');
+			assert.strictEqual(exists, true);
+
+			await db.deleteObjectField('topic:delete1', 'private');
+			
+			exists = await db.isObjectField('topic:delete1', 'private');
+			assert.strictEqual(exists, false);
+
+			// Verify other fields remain
+			const titleExists = await db.isObjectField('topic:delete1', 'title');
+			assert.strictEqual(titleExists, true);
+		});
+	});
 });
