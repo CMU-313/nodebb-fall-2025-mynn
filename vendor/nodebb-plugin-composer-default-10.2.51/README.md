@@ -10,4 +10,3 @@ This plugin activates the default composer for NodeBB. It is activated by defaul
 ### Mobile Devices
 ![Mobile Composer](screenshots/mobile.png?raw=true)
 
-hello
