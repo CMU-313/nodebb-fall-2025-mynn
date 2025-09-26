@@ -26,12 +26,21 @@
 
 			<!-- IMPORT partials/composer-formatting.tpl -->
 
+			<!-- Private Post Option -->
+			{{{ if isTopicOrMain }}}
+			<div class="form-group mt-2">
+				<div class="form-check">
+					<input type="checkbox" class="form-check-input" id="composer-private" name="private">
+					<label class="form-check-label" for="composer-private">Make Private</label>
+				</div>
+			</div>
+			{{{ end }}}
+
 			<!-- IMPORT partials/composer-write-preview.tpl -->
 
 			{{{ if isTopicOrMain }}}
 			<!-- IMPORT partials/composer-tags.tpl -->
 			{{{ end }}}
-			
 
 			<div class="imagedrop"><div>[[topic:composer.drag-and-drop-images]]</div></div>
 
