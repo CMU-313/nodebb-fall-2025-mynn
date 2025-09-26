@@ -41,6 +41,7 @@
 			{{{ if isTopicOrMain }}}
 			<!-- IMPORT partials/composer-tags.tpl -->
 			{{{ end }}}
+			
 
 			<div class="imagedrop"><div>[[topic:composer.drag-and-drop-images]]</div></div>
 
