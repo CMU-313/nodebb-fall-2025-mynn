@@ -2510,7 +2510,108 @@ describe('Topic\'s', () => {
 			assert(!score);
 		});
 	});
+
+	describe('private topics privilege filtering', () => {
+		let privateTid;
+		let publicTid;
+		let authorUid;
+		let otherUid;
+		let adminUid;
+		
+		before(async () => {
+			// create test users
+			authorUid = await User.create({ username: 'topicauthor', password: '123456' });
+			otherUid = await User.create({ username: 'otheruser', password: '123456' });
+			adminUid = await User.create({ username: 'adminuser', password: '123456' });
+			await groups.join('administrators', adminUid);
+			
+			// create private topic
+			const privateResult = await topics.post({
+				uid: authorUid,
+				cid: categoryObj.cid,
+				title: 'Private Topic',
+				content: 'Private content',
+			});
+			privateTid = privateResult.topicData.tid;
+			await db.setObjectField(`topic:${privateTid}`, 'private', 1);
+			
+			// create public topic
+			const publicResult = await topics.post({
+				uid: authorUid,
+				cid: categoryObj.cid,
+				title: 'Public Topic',
+				content: 'Public content',
+			});
+			publicTid = publicResult.topicData.tid;
+			await db.setObjectField(`topic:${publicTid}`, 'private', 0);
+		});
+
+		it('should return private as boolean from getTopicData', async () => {
+			const [privateData, publicData] = await Promise.all([
+				topics.getTopicData(privateTid),
+				topics.getTopicData(publicTid),
+			]);
+			
+			assert.strictEqual(privateData.private, true);
+			assert.strictEqual(typeof privateData.private, 'boolean');
+			assert.strictEqual(publicData.private, false);
+			assert.strictEqual(typeof publicData.private, 'boolean');
+		});
+
+		it('should filter topic lists based on private visibility', async () => {
+			const privilegesTopics = require('../src/privileges/topics');
+			const allTids = [privateTid, publicTid];
+			
+			// author should see both
+			const authorVisible = await privilegesTopics.filterTids('topics:read', allTids, authorUid);
+			assert.strictEqual(authorVisible.length, 2);
+			
+			// other user should only see public
+			const otherVisible = await privilegesTopics.filterTids('topics:read', allTids, otherUid);
+			assert.strictEqual(otherVisible.length, 1);
+			assert(otherVisible.includes(publicTid));
+			assert(!otherVisible.includes(privateTid));
+			
+			// admin should see both private + public
+			const adminVisible = await privilegesTopics.filterTids('topics:read', allTids, adminUid);
+			assert.strictEqual(adminVisible.length, 2);
+		});
+
+		it('should handle guests correctly for private topics', async () => {
+			const privilegesTopics = require('../src/privileges/topics');
+			const allTids = [privateTid, publicTid];
+			const guestVisible = await privilegesTopics.filterTids('topics:read', allTids, 0);
+			
+			// guests should only see public topics
+			assert.strictEqual(guestVisible.length, 1);
+			assert(guestVisible.includes(publicTid));
+			assert(!guestVisible.includes(privateTid));
+		});
+
+		describe('canViewPrivate function', () => {
+			const privilegesTopics = require('../src/privileges/topics');
+
+			it('should allow author and admin, deny others', async () => {
+				const [privateData, publicData] = await Promise.all([
+					topics.getTopicData(privateTid),
+					topics.getTopicData(publicTid),
+				]);
+
+				// private topic tests
+				assert.strictEqual(privilegesTopics.canViewPrivate(privateData, authorUid, { isAdminOrMod: false }), true);
+				assert.strictEqual(privilegesTopics.canViewPrivate(privateData, adminUid, { isAdminOrMod: true }), true);
+				assert.strictEqual(privilegesTopics.canViewPrivate(privateData, otherUid, { isAdminOrMod: false }), false);
+				assert.strictEqual(privilegesTopics.canViewPrivate(privateData, 0, { isAdminOrMod: false }), false);
+
+				// public topic tests -- everyone can see
+				[authorUid, otherUid, adminUid, 0].forEach(uid => {
+					assert.strictEqual(privilegesTopics.canViewPrivate(publicData, uid, { isAdminOrMod: false }), true);
+				});
+			});
+		});
+	});
 });
+
 
 describe('Topics\'', async () => {
 	let files;
