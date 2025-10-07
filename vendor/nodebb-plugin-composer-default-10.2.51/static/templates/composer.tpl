@@ -27,7 +27,7 @@
 			<!-- IMPORT partials/composer-formatting.tpl -->
 
 			<!-- Private Post Option -->
-			{{{ if isTopicOrMain }}}
+			{{{ if (isTopicOrMain && !isEditing) }}}
 			<div class="form-group mt-2">
 				<div class="form-check">
 					<input type="checkbox" class="form-check-input" id="composer-private" name="private">
