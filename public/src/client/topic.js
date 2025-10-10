@@ -229,7 +229,6 @@ define('forum/topic', [
 			const isPrivate = button.data('private');
 	
 			try {
-				// Send a PUT request to toggle the private field
 				const response = await fetch(`/api/topic/${tid}/toggle-privacy`, {
 					method: 'PUT',
 					headers: { 'Content-Type': 'application/json' },
@@ -238,7 +237,6 @@ define('forum/topic', [
 	
 				if (response.ok) {
 					const result = await response.json();
-					// Update the button's state and text
 					button.data('private', result.private);
 					button.find('span').text(result.private ? 'Make Public' : 'Make Private');
 					button.find('i').toggleClass('fa-lock fa-unlock');
