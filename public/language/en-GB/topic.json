@@ -254,5 +254,8 @@
 	"thumb-image": "Topic thumbnail image",
 
 	"announcers": "Shares",
-	"announcers-x": "Shares (%1)"
+	"announcers-x": "Shares (%1)",
+
+	"make_private": "Make Private",
+    "make_public": "Make Public"
 }
