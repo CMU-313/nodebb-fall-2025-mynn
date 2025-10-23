@@ -75,3 +75,7 @@ test.sh
 
 .docker/**
 !**/.gitkeep
+
+## k6 test outputs
+test/load-testing/results.json
+test/load-testing/k6-output.txt
