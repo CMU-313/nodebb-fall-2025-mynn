@@ -360,6 +360,31 @@ function addOGImageTag(res, image) {
 	}
 }
 
+topicsController.togglePrivate = async function (req, res, next) {
+	try {
+		const tid = req.params.topic_id;
+		const { private: isPrivate } = req.body;
+		if (!utils.isNumber(tid)) {
+			return next();
+		}
+		if (typeof isPrivate !== 'boolean') {
+			return res.status(400).json({ error: 'Invalid private value' });
+		}
+
+		const canEdit = await privileges.topics.can('topics:edit', tid, req.uid);
+		if (!canEdit) {
+			return res.status(403).json({ error: '[[error:no-privileges]]' });
+		}
+
+		await topics.setTopicField(tid, 'private', isPrivate);
+
+		res.status(200).json({ private: isPrivate });
+	} catch (err) {
+		console.error('Error toggling topic privacy:', err);
+		res.status(500).json({ error: 'Internal server error' });
+	}
+};
+
 topicsController.teaser = async function (req, res, next) {
 	const tid = req.params.topic_id;
 	if (!utils.isNumber(tid)) {
