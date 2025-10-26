@@ -2,7 +2,7 @@ name: Load Test
 
 on:
   workflow_run:
-    workflows: ['deploy']
+    workflows: ['VM Deploy NodeBB']
     types:
       - completed
   workflow_dispatch:
@@ -31,4 +31,6 @@ jobs:
       - name: Run load test
         uses: grafana/run-k6-action@v1
         with:
-          path: test/load-testing/basic-load-test.js -e BASE_URL=http://128.2.220.232:4567/
+          path: test/load-testing/basic-load-test.js
+        env:
+          BASE_URL: 'http://128.2.220.232:4567/'
