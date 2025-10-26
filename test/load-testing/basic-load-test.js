@@ -12,7 +12,7 @@ export const options = {
   },
 };
 
-const BASE = __ENV.BASE_URL || 'http://localhost:4567';
+const BASE = __ENV.BASE_URL || 'http://0.0.0.0:4567';
 
 export default function () {
   const res = http.get(`${BASE}/`);
