@@ -14,7 +14,9 @@
         "lint": "eslint --cache ./nodebb .",
         "test": "nyc --reporter=html --reporter=text-summary mocha",
         "coverage": "nyc report --reporter=text-lcov > ./coverage/lcov.info",
-        "coveralls": "nyc report --reporter=text-lcov | coveralls && rm -r coverage"
+        "coveralls": "nyc report --reporter=text-lcov | coveralls && rm -r coverage",
+        "load-test": "k6 run ../test/load-testing/basic-load-test.js",
+        "load-test:report": "k6 run --out json=../test/load-testing/results.json ../test/load-testing/basic-load-test.js > ../test/load-testing/k6-output.txt 2>&1"
     },
     "nyc": {
         "exclude": [
