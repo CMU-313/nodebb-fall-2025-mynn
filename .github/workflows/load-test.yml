@@ -7,10 +7,11 @@ on:
   pull_request:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   load-test:
-    runs-on: grafana/k6
+    runs-on: ubuntu-latest
     env:
       TEST_ENV: 'production'
 
@@ -67,6 +68,11 @@ jobs:
             }
         run: |
           node app --setup="${SETUP}" --ci="${CI}"
+
+      - name: Setup k6
+        uses: grafana/setup-k6-action@v1
       
       - name: Run load test
-        run: npm run load-test
+        uses: grafana/run-k6-action@v1
+        with:
+          path: test/load-testing/basic-load-test.js
