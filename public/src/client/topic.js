@@ -69,6 +69,7 @@ define('forum/topic', [
 		setupQuickReply();
 		handleBookmark(tid);
 		handleThumbs();
+		addPrivacyToggleHandler();
 
 		$(window).on('scroll', utils.debounce(updateTopicTitle, 250));
 		configurePostToggle();
@@ -231,6 +232,37 @@ define('forum/topic', [
 			blockQuote.toggleClass('uncollapsed');
 			const collapsed = !blockQuote.hasClass('uncollapsed');
 			toggle.toggleClass('fa-angle-down', collapsed).toggleClass('fa-angle-up', !collapsed);
+		});
+	}
+
+	function addPrivacyToggleHandler() {
+		// Attach a click event listener to the privacy toggle button
+		$(document).on('click', '[component="topic/toggle-private"]', async function (e) {
+			e.preventDefault();
+	
+			const button = $(this);
+			const tid = button.data('tid');
+			const isPrivate = button.data('private');
+	
+			try {
+				const response = await fetch(`/api/topic/${tid}/toggle-privacy`, {
+					method: 'PUT',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ private: !isPrivate }),
+				});
+	
+				if (response.ok) {
+					const result = await response.json();
+					button.data('private', result.private);
+					button.find('span').text(result.private ? 'Make Public' : 'Make Private');
+					button.find('i').toggleClass('fa-lock fa-unlock');
+				} else {
+					app.alertError('Failed to toggle topic privacy.');
+				}
+			} catch (err) {
+				console.error('Error toggling topic privacy:', err);
+				app.alertError('An error occurred while toggling topic privacy.');
+			}
 		});
 	}
 
